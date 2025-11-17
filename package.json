@@ -1,0 +1,13 @@
+{
+  "name": "powerlifting-analytics",
+  "private": true,
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "import": "cd server && npm run import"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
