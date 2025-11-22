@@ -1,11 +1,12 @@
 import https from "https";
-import http from "http";
 import unzipper from "unzipper";
 import csv from "csv-parser";
 import { pipeline } from "stream/promises";
 import { pool } from "../db";
 import crypto from "crypto";
-import { Readable } from "stream";
+import fs from "fs";
+import path from "path";
+import os from "os";
 
 // Type for raw CSV row data
 interface RawCSVRow {
@@ -101,7 +102,28 @@ interface LiftRow {
 }
 
 function generateHash(row: RawCSVRow): string {
-  const key = `${row.Name}|${row.Date}|${row.MeetName}|${row.Equipment}|${row.Division}|${row.Event}|${row.WeightClassKg}`;
+  // Include all key data that makes a lift unique:
+  // - Lifter identity (name, sex, age class, bodyweight)
+  // - Competition context (date, meet, division, equipment, event, weight class)
+  // - Results (best lifts and total to distinguish different performances)
+  const key = [
+    row.Name,
+    row.Date,
+    row.MeetName,
+    row.Equipment,
+    row.Division,
+    row.Event,
+    row.WeightClassKg,
+    row.BodyweightKg,
+    row.AgeClass,
+    // Include best lifts and total to make each performance unique
+    row.Best3SquatKg,
+    row.Best3BenchKg,
+    row.Best3DeadliftKg,
+    row.TotalKg,
+    row.Place,
+  ].join("|");
+
   return crypto.createHash("sha256").update(key).digest("hex");
 }
 
@@ -168,15 +190,26 @@ function transformRow(row: RawCSVRow): LiftRow {
 async function upsertBatch(rows: LiftRow[]): Promise<void> {
   if (rows.length === 0) return;
 
+  // Deduplicate rows by source_hash - keep only the last occurrence
+  const uniqueRows = Array.from(
+    new Map(rows.map((row) => [row.source_hash, row])).values()
+  );
+
+  if (uniqueRows.length < rows.length) {
+    console.log(
+      `Deduplicated ${rows.length - uniqueRows.length} duplicate rows in batch`
+    );
+  }
+
   const client = await pool.connect();
 
   try {
     await client.query("BEGIN");
 
-    const columns = Object.keys(rows[0]);
+    const columns = Object.keys(uniqueRows[0]);
     const numCols = columns.length;
 
-    const values = rows
+    const values = uniqueRows
       .map((_, idx) => {
         const offset = idx * numCols;
         const params = columns.map((_, colIdx) => `$${offset + colIdx + 1}`);
@@ -184,21 +217,16 @@ async function upsertBatch(rows: LiftRow[]): Promise<void> {
       })
       .join(",");
 
-    const flatValues = rows.flatMap((row) =>
+    const flatValues = uniqueRows.flatMap((row) =>
       columns.map((col) => row[col as keyof LiftRow])
     );
-
-    const updateSet = columns
-      .filter((col) => col !== "source_hash")
-      .map((col) => `${col} = EXCLUDED.${col}`)
-      .join(",");
 
     await client.query(
       `
       INSERT INTO lifts (${columns.join(",")})
       VALUES ${values}
       ON CONFLICT (source_hash) 
-      DO UPDATE SET ${updateSet}, updated_at = NOW()
+      DO NOTHING
     `,
       flatValues
     );
@@ -213,52 +241,65 @@ async function upsertBatch(rows: LiftRow[]): Promise<void> {
   }
 }
 
-/**
- * Fetches data from a URL and returns a readable stream
- */
-async function fetchFromUrl(url: string): Promise<Readable> {
-  return new Promise((resolve, reject) => {
-    const protocol = url.startsWith("https") ? https : http;
+async function downloadZipFile(url: string): Promise<string> {
+  const tempFile = path.join(os.tmpdir(), `openpowerlifting-${Date.now()}.zip`);
+  const fileStream = fs.createWriteStream(tempFile);
 
-    console.log(`Fetching data from: ${url}`);
+  console.log(`Downloading ${url}...`);
 
-    protocol
-      .get(url, (response) => {
-        if (response.statusCode === 302 || response.statusCode === 301) {
-          // Handle redirects
-          const redirectUrl = response.headers.location;
-          if (redirectUrl) {
-            console.log(`Following redirect to: ${redirectUrl}`);
-            fetchFromUrl(redirectUrl).then(resolve).catch(reject);
-            return;
-          }
+  await new Promise<void>((resolve, reject) => {
+    https.get(url, (response) => {
+      const totalBytes = parseInt(
+        response.headers["content-length"] || "0",
+        10
+      );
+      let downloadedBytes = 0;
+      let lastPercent = 0;
+
+      response.on("data", (chunk) => {
+        downloadedBytes += chunk.length;
+        const percent = Math.floor((downloadedBytes / totalBytes) * 100);
+        if (percent % 10 === 0 && percent > lastPercent) {
+          console.log(
+            `${percent}% (${(downloadedBytes / 1024 / 1024).toFixed(1)} MB)`
+          );
+          lastPercent = percent;
         }
+      });
 
-        if (response.statusCode !== 200) {
-          reject(new Error(`Failed to fetch: HTTP ${response.statusCode}`));
-          return;
-        }
+      response.pipe(fileStream);
 
-        resolve(response);
-      })
-      .on("error", reject);
+      fileStream.on("finish", () => {
+        fileStream.close();
+        console.log(
+          `✓ Downloaded ${(downloadedBytes / 1024 / 1024).toFixed(1)} MB`
+        );
+        resolve();
+      });
+
+      fileStream.on("error", reject);
+    });
   });
+
+  return tempFile;
 }
 
-async function processDataSource(source: string): Promise<void> {
-  const batchSize = 1000;
+async function processZipFromUrl(url: string): Promise<void> {
+  const batchSize = 100;
   let batch: LiftRow[] = [];
   let processedCount = 0;
   let errorCount = 0;
   const startTime = Date.now();
 
-  console.log(`Starting import from: ${source}`);
+  console.log(`Starting import from: ${url}`);
+
+  // Download the ZIP file first
+  const zipFile = await downloadZipFile(url);
+  console.log(`Processing: ${zipFile}`);
 
   try {
-    const dataStream = await fetchFromUrl(source);
-
     await pipeline(
-      dataStream,
+      fs.createReadStream(zipFile),
       unzipper.ParseOne(/\.csv$/),
       csv(),
       async function* (sourceStream) {
@@ -270,20 +311,21 @@ async function processDataSource(source: string): Promise<void> {
               await upsertBatch(batch);
               processedCount += batch.length;
 
-              const elapsed = (Date.now() - startTime) / 1000;
-              const rate = Math.round(processedCount / elapsed);
-              console.log(
-                `Processed ${processedCount.toLocaleString()} rows (${rate}/sec)${
-                  errorCount > 0 ? ` | ${errorCount} errors` : ""
-                }`
-              );
+              if (processedCount % 10000 === 0) {
+                const elapsed = (Date.now() - startTime) / 1000;
+                const rate = Math.round(processedCount / elapsed);
+                console.log(
+                  `Processed ${processedCount.toLocaleString()} rows (${rate}/sec)${
+                    errorCount > 0 ? ` | ${errorCount} errors` : ""
+                  }`
+                );
+              }
 
               batch = [];
             }
           } catch (error) {
             errorCount++;
             console.error(`Error processing row:`, error);
-            // Continue processing other rows
           }
         }
 
@@ -295,23 +337,28 @@ async function processDataSource(source: string): Promise<void> {
         const totalTime = ((Date.now() - startTime) / 1000 / 60).toFixed(2);
         console.log(
           `✓ Complete: ${processedCount.toLocaleString()} rows in ${totalTime} minutes${
-            errorCount > 0 ? ` (${errorCount} errors skipped)` : ""
+            errorCount > 0 ? ` (${errorCount} errors)` : ""
           }`
         );
       }
     );
-  } catch (error) {
-    console.error("Fatal error during import:", error);
+  } catch (error: any) {
+    console.error(`Import failed:`, error.message);
+    const elapsed = (Date.now() - startTime) / 1000 / 60;
+    console.log(`\nStopped after ${elapsed.toFixed(2)} minutes`);
+    console.log(`Rows processed: ${processedCount.toLocaleString()}`);
     throw error;
   } finally {
+    // Clean up temp file
+    if (fs.existsSync(zipFile)) {
+      fs.unlinkSync(zipFile);
+    }
     await pool.end();
   }
 }
 
 // Default OpenPowerlifting data URL (updates daily)
-const DEFAULT_DATA_URL =
+const DATA_URL =
   "https://openpowerlifting.gitlab.io/opl-csv/files/openpowerlifting-latest.zip";
 
-// Run the import - accepts URL or file path as argument
-const dataSource = process.argv[2] || DEFAULT_DATA_URL;
-processDataSource(dataSource).catch(console.error);
+processZipFromUrl(DATA_URL).catch(console.error);

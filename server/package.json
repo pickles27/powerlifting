@@ -7,6 +7,8 @@
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+    "setup": "ts-node src/jobs/setupDatabase.ts",
+    "clear": "ts-node src/jobs/clearData.ts",
     "import": "ts-node src/jobs/importData.ts"
   },
   "keywords": [],
