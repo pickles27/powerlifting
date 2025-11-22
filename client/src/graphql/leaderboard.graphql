@@ -1,0 +1,31 @@
+query Leaderboard(
+  $limit: Int
+  $sex: Sex
+  $equipment: Equipment
+  $event: Event
+  $weightClass: String
+) {
+  leaderboard(
+    limit: $limit
+    sex: $sex
+    equipment: $equipment
+    event: $event
+    weightClass: $weightClass
+  ) {
+    name
+    sex
+    event
+    equipment
+    bodyweightKg
+    weightClassKg
+    best3SquatKg
+    best3BenchKg
+    best3DeadliftKg
+    totalKg
+    dots
+    wilks
+    date
+    meetName
+    federation
+  }
+}
