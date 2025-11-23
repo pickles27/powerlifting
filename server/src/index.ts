@@ -25,7 +25,12 @@ async function startServer() {
 
   app.use(
     "/graphql",
-    cors<cors.CorsRequest>(),
+    cors<cors.CorsRequest>({
+      origin: [
+        "http://localhost:5173", // Local dev
+        process.env.CLIENT_URL || "http://localhost:5173", // Production client
+      ],
+    }),
     express.json(),
     expressMiddleware(server, {
       context: async () => ({ pool }),
