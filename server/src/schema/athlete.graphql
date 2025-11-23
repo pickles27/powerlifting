@@ -1,0 +1,38 @@
+"""
+Represents a person who competes in powerlifting competitions.
+"""
+type Athlete {
+  id: ID!
+  """
+  The full name of the lifter (may include a #number for disambiguation)
+  """
+  name: String!
+  """
+  The sex category in which the lifter competed (M, F, or Mx)
+  """
+  sex: Sex!
+  """
+  The lifter's home country, if known
+  """
+  country: String
+  """
+  The lifter's home state/province/region, if known
+  """
+  state: String
+  """
+  The lifter's age at the time of competition, if known
+  """
+  age: Float
+  """
+  The age class in which the lifter falls, if known
+  """
+  ageClass: String
+  """
+  The birth year class in which the lifter falls, if known
+  """
+  birthYearClass: String
+  """
+  All lifts/meet results for this athlete
+  """
+  lifts: [Lift!]!
+}

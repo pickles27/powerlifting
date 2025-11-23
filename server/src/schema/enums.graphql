@@ -1,0 +1,33 @@
+"""
+The sex category in which the lifter competed
+"""
+enum Sex {
+  M
+  F
+  Mx
+}
+
+"""
+The equipment category under which the lifts were performed
+"""
+enum Equipment {
+  Raw
+  Wraps
+  Single_ply
+  Multi_ply
+  Unlimited
+  Straps
+}
+
+"""
+The type of competition that the lifter entered
+"""
+enum Event {
+  SBD
+  BD
+  SD
+  SB
+  S
+  B
+  D
+}

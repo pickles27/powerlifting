@@ -1,0 +1,10 @@
+type Meet {
+  federation: String!
+  parentFederation: String
+  date: String!
+  country: String!
+  state: String
+  town: String
+  name: String!
+  sanctioned: String
+}

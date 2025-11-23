@@ -1,0 +1,26 @@
+type Query {
+  lifts(
+    bodyweightMin: Float
+    bodyweightMax: Float
+    dateMin: String
+    dateMax: String
+    sex: Sex
+    event: Event
+    equipment: Equipment
+    ageMin: Float
+    ageMax: Float
+    ageClass: String
+    limit: Int = 1000
+    offset: Int = 0
+  ): [Lift!]!
+
+  sbdByBodyweight(
+    bodyweightMin: Float
+    bodyweightMax: Float
+    sex: Sex
+    event: Event
+    equipment: Equipment
+    limit: Int = 1000
+    offset: Int = 0
+  ): [SbdDataPoint!]!
+}

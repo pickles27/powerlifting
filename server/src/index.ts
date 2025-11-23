@@ -3,9 +3,14 @@ import http from "http";
 import cors from "cors";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express5";
-import { typeDefs } from "./schema";
 import { resolvers } from "./resolvers";
 import { pool } from "./db";
+import { loadFilesSync } from "@graphql-tools/load-files";
+import { mergeTypeDefs } from "@graphql-tools/merge";
+import { join } from "path";
+
+const typesArray = loadFilesSync(join(__dirname, "./schema/**/*.graphql"));
+const typeDefs = mergeTypeDefs(typesArray);
 
 async function startServer() {
   const app = express();

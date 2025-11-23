@@ -1,0 +1,72 @@
+query Lifts(
+  $bodyweightMin: Float
+  $bodyweightMax: Float
+  $dateMin: String
+  $dateMax: String
+  $sex: Sex
+  $event: Event
+  $equipment: Equipment
+  $ageMin: Float
+  $ageMax: Float
+  $ageClass: String
+  $limit: Int
+  $offset: Int
+) {
+  lifts(
+    bodyweightMin: $bodyweightMin
+    bodyweightMax: $bodyweightMax
+    dateMin: $dateMin
+    dateMax: $dateMax
+    sex: $sex
+    event: $event
+    equipment: $equipment
+    ageMin: $ageMin
+    ageMax: $ageMax
+    ageClass: $ageClass
+    limit: $limit
+    offset: $offset
+  ) {
+    id
+    name
+    sex
+    event
+    equipment
+    bodyweightKg
+    age
+    ageClass
+    date
+    best3SquatKg
+    best3BenchKg
+    best3DeadliftKg
+    totalKg
+  }
+}
+
+query SbdByBodyweight(
+  $bodyweightMin: Float
+  $bodyweightMax: Float
+  $sex: Sex
+  $event: Event
+  $equipment: Equipment
+  $limit: Int
+  $offset: Int
+) {
+  sbdByBodyweight(
+    bodyweightMin: $bodyweightMin
+    bodyweightMax: $bodyweightMax
+    sex: $sex
+    event: $event
+    equipment: $equipment
+    limit: $limit
+    offset: $offset
+  ) {
+    bodyweightKg
+    best3BenchKg
+    best3SquatKg
+    best3DeadliftKg
+    totalKg
+    sex
+    event
+    equipment
+  }
+}
