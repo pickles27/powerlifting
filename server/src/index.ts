@@ -23,13 +23,16 @@ async function startServer() {
 
   await server.start();
 
+  const allowedOrigins = [
+    "http://localhost:5173",
+    process.env.CLIENT_URL,
+    /\.vercel\.app$/,
+  ].filter((origin): origin is string | RegExp => Boolean(origin));
+
   app.use(
     "/graphql",
     cors<cors.CorsRequest>({
-      origin: [
-        "http://localhost:5173", // Local dev
-        process.env.CLIENT_URL || "http://localhost:5173", // Production client
-      ],
+      origin: allowedOrigins,
     }),
     express.json(),
     expressMiddleware(server, {
@@ -40,7 +43,7 @@ async function startServer() {
   const PORT = process.env.PORT || 4000;
 
   httpServer.listen(PORT, () => {
-    console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
+    console.log(`🚀 Server running on port ${PORT}`);
   });
 }
 
