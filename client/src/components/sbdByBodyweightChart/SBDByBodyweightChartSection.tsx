@@ -1,14 +1,30 @@
-import { Box } from "@mui/material";
+import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
 import { SBDByBodyweightChart } from "./SBDByBodyweightChart";
 import { useSbdByBodyweightQuery } from "../../__generated__/graphql";
 
 export const SBDByBodyweightChartSection = () => {
-  const { data } = useSbdByBodyweightQuery({
+  const { data, loading, error } = useSbdByBodyweightQuery({
     variables: { limit: 2000 },
   });
   const lifts = data?.sbdByBodyweight || [];
 
-  if (lifts.length === 0) {
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "50vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (lifts.length === 0 || error || !data) {
     return <Box>No data available</Box>;
   }
 
