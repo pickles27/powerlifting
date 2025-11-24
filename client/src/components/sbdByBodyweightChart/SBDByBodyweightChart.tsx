@@ -10,7 +10,7 @@ import {
   type ScatterChartProps,
 } from "@mui/x-charts/ScatterChart";
 import { valueExists } from "../../utils/valueExists";
-import type { ScatterValueType } from "@mui/x-charts";
+import { rainbowSurgePalette, type ScatterValueType } from "@mui/x-charts";
 import type { SbdDataPoint } from "../../__generated__/graphql";
 
 export const SBDByBodyweightChart = ({ lifts }: { lifts: SbdDataPoint[] }) => {
@@ -75,7 +75,7 @@ export const SBDByBodyweightChart = ({ lifts }: { lifts: SbdDataPoint[] }) => {
     xAxis: [{ min: 20, label: "Body Weight (kg)" }],
     yAxis: [{ min: 0, width: 60, label: "Amount Lifted (kg)" }],
     height: 400,
-    // colors: schemePaired,
+    colors: rainbowSurgePalette,
     slotProps: {
       legend: {
         position: { vertical: "bottom" },
@@ -90,15 +90,15 @@ export const SBDByBodyweightChart = ({ lifts }: { lifts: SbdDataPoint[] }) => {
   return <ScatterChart {...scatterChartsParams} renderer="svg-batch" />;
 };
 
-function LiftTooltip() {
+const LiftTooltip = () => {
   return (
     <ChartsTooltipContainer trigger="item">
       <LiftTooltipContent />
     </ChartsTooltipContainer>
   );
-}
+};
 
-function LiftTooltipContent() {
+const LiftTooltipContent = () => {
   const item = useItemTooltip<"scatter">();
 
   if (!item) {
@@ -129,4 +129,4 @@ function LiftTooltipContent() {
       </Typography>
     </Paper>
   );
-}
+};

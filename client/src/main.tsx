@@ -5,26 +5,35 @@ import { client } from "./apollo-client";
 import App from "./App.tsx";
 import CssBaseline from "@mui/material/CssBaseline";
 import GlobalStyles from "@mui/material/GlobalStyles";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+
+const theme = createTheme({
+  colorSchemes: {
+    dark: true,
+  },
+});
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ApolloProvider client={client}>
-      <CssBaseline />
-      <GlobalStyles
-        styles={{
-          html: {
-            overflowX: "hidden",
-          },
-          body: {
-            overflowX: "hidden",
-          },
-          "#root": {
-            width: "100%",
-            overflowX: "hidden",
-          },
-        }}
-      />
-      <App />
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <GlobalStyles
+          styles={{
+            html: {
+              overflowX: "hidden",
+            },
+            body: {
+              overflowX: "hidden",
+            },
+            "#root": {
+              width: "100%",
+              overflowX: "hidden",
+            },
+          }}
+        />
+        <App />
+      </ThemeProvider>
     </ApolloProvider>
   </StrictMode>
 );
