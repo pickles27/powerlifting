@@ -24,7 +24,7 @@ async function startServer() {
   await server.start();
 
   const allowedOrigins = [
-    "http://localhost:5173",
+    "http://localhost:5173", // Vite local development server
     process.env.CLIENT_URL,
     /\.vercel\.app$/,
   ].filter((origin): origin is string | RegExp => Boolean(origin));
