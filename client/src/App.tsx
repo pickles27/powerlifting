@@ -6,7 +6,7 @@ import "@fontsource/roboto/700.css";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
-import { SBDByBodyweightChartSection } from "./components/sbdByBodyweightChart/SBDByBodyweightChartSection";
+import { SBDByBodyweightChartSection } from "./components/charts/sbdByBodyweight/SBDByBodyweightChartSection";
 import { useColorScheme } from "@mui/material/styles";
 import { DarkModeToggle } from "./components/DarkModeToggle";
 import Link from "@mui/material/Link";
@@ -23,7 +23,15 @@ function App() {
     <Container
       component="main"
       maxWidth="sm"
-      sx={{ py: 6, width: "100%", position: "relative" }}
+      sx={{
+        py: {
+          xs: 6,
+          sm: 8,
+          md: 10,
+        },
+        width: "100%",
+        position: "relative",
+      }}
     >
       <DarkModeToggle sx={{ position: "absolute", top: 12, right: 8 }} />
       <Typography

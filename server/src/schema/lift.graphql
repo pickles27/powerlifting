@@ -186,6 +186,7 @@ type SbdDataPoint {
   best3BenchKg: Float
   best3DeadliftKg: Float
   totalKg: Float
+  name: String
   sex: Sex
   event: Event
   equipment: Equipment

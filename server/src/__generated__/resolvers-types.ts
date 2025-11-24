@@ -196,6 +196,7 @@ export type SbdDataPoint = {
   bodyweightKg: Scalars['Float']['output'];
   equipment?: Maybe<Equipment>;
   event?: Maybe<Event>;
+  name?: Maybe<Scalars['String']['output']>;
   sex?: Maybe<Sex>;
   totalKg?: Maybe<Scalars['Float']['output']>;
 };
@@ -397,6 +398,7 @@ export type SbdDataPointResolvers<ContextType = any, ParentType extends Resolver
   bodyweightKg?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   equipment?: Resolver<Maybe<ResolversTypes['Equipment']>, ParentType, ContextType>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sex?: Resolver<Maybe<ResolversTypes['Sex']>, ParentType, ContextType>;
   totalKg?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
 }>;

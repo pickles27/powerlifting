@@ -196,6 +196,7 @@ export type SbdDataPoint = {
   bodyweightKg: Scalars['Float']['output'];
   equipment?: Maybe<Equipment>;
   event?: Maybe<Event>;
+  name?: Maybe<Scalars['String']['output']>;
   sex?: Maybe<Sex>;
   totalKg?: Maybe<Scalars['Float']['output']>;
 };
