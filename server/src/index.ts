@@ -33,6 +33,10 @@ async function startServer() {
     ...clientUrls,
   ].filter((origin): origin is string | RegExp => Boolean(origin));
 
+  app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok" });
+  });
+
   app.use(
     "/graphql",
     cors<cors.CorsRequest>({
