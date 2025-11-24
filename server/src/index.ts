@@ -23,10 +23,14 @@ async function startServer() {
 
   await server.start();
 
+  const clientUrls = process.env.CLIENT_URLS
+    ? process.env.CLIENT_URLS.split(",").map((url) => url.trim())
+    : [];
+
   const allowedOrigins = [
     "http://localhost:5173", // Vite local development server
-    process.env.CLIENT_URL,
     /\.vercel\.app$/,
+    ...clientUrls,
   ].filter((origin): origin is string | RegExp => Boolean(origin));
 
   app.use(
