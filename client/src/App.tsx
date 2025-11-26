@@ -10,6 +10,7 @@ import { SBDByBodyweightChartSection } from "./components/charts/sbdByBodyweight
 import { useColorScheme } from "@mui/material/styles";
 import { DarkModeToggle } from "./components/DarkModeToggle";
 import Link from "@mui/material/Link";
+import { red } from "@mui/material/colors";
 
 function App() {
   const { mode } = useColorScheme();
@@ -68,6 +69,12 @@ function App() {
           OpenPowerlifting project
         </Link>
         .
+      </Typography>
+      <Typography
+        variant="subtitle2"
+        sx={{ textAlign: "center", color: red[500] }}
+      >
+        This project is a work in progress, please check back later!
       </Typography>
       <Stack component="main" my={4} gap={6} alignItems="center">
         <SBDByBodyweightChartSection />
