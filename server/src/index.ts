@@ -23,7 +23,6 @@ async function startServer() {
 
   await server.start();
 
-  console.log("Allowed client URLs:", process.env.CLIENT_URLS);
   const clientUrls = process.env.CLIENT_URLS
     ? process.env.CLIENT_URLS.split(",").map((url) => url.trim())
     : [];
