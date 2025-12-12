@@ -7,9 +7,9 @@
     "dev": "nodemon src/index.ts",
     "build": "tsc && copyfiles -u 1 'src/schema/**/*.graphql' 'src/__generated__/**/*' dist/",
     "start": "node dist/index.js",
-    "setup": "ts-node src/jobs/setupDatabase.ts",
-    "clear": "ts-node src/jobs/clearData.ts",
-    "import": "ts-node src/jobs/importData.ts",
+    "setup": "node dist/jobs/setupDatabase.js",
+    "clear": "node dist/jobs/clearData.js",
+    "import": "node dist/jobs/importData.js",
     "generate": "graphql-codegen --config codegen.ts"
   },
   "keywords": [],
