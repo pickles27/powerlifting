@@ -9,7 +9,7 @@ env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: powerlifting-insights-server
   ECS_CLUSTER: powerlifting-insights-cluster
-  ECS_SERVICE: powerlifting-insights-api-service
+  ECS_SERVICE: powerlifting-insights-api-task-service
 
 jobs:
   build:
