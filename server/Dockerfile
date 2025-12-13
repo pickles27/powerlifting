@@ -1,7 +1,15 @@
 FROM node:22-alpine
 
-# Install CA certificates for SSL verification
-RUN apk add --no-cache ca-certificates
+# Install standard CA certificates for general internet use
+RUN apk add --no-cache ca-certificates openssl wget
+
+# Download the Amazon RDS Global CA Bundle into a known location
+ENV RDS_CA_PATH="/etc/ssl/certs/rds-ca-bundle.pem"
+RUN wget -O ${RDS_CA_PATH} https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+
+# Configure Node.js to use this specific bundle in addition to default CAs
+# NODE_EXTRA_CA_CERTS is a Node.js specific environment variable
+ENV NODE_EXTRA_CA_CERTS=${RDS_CA_PATH}
 
 WORKDIR /app
 
